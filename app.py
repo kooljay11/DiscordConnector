@@ -31,7 +31,7 @@ async def on_message(message):
     this_guild = message.guild.id
     sender_name = message.author.nick
 
-    if sender_name == None:
+    if sender_name is None:
         sender_name = message.author.name + "#" + message.author.discriminator
 
     with open("guild_nicks.json", "r") as file:
