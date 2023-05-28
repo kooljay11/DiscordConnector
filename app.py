@@ -106,15 +106,10 @@ async def listguildnicks(interaction: discord.Interaction):
             guilds = json.load(file)
 
         output = "All guild nicks:\n"
-        print(f'output: {output}')
-        print(f'guilds: {guilds}')
-        print(f'guilds["nicks"]: {guilds["nicks"]}')
 
         for guild in guilds["nicks"]:
             guild_nick = guild["guild_nick"]
-            print(f'guild_nick: {guild_nick}')
             guild_id = int(guild["guild_id"])
-            print(f'guild_id: {guild_id}')
             output += f"{guild_nick}: {guild_id}\n"
 
         await interaction.response.send_message(output)
@@ -167,29 +162,33 @@ async def addguildnick(interaction: discord.Interaction, guild_id: str, guild_ni
 
 @client.event
 async def on_message(message):
-    # print(f"message: {message}")
-    # print(f"message: {message.content}")
-
     # Ignore if the sender was this bot
     if message.author.id == 1099535052762787964:
+        # print("Ignoring self.")
         return
 
-    with open("./channels.txt", "r") as file:
-        channels = file.read().split('\n')
+    with open("channels.json", "r") as file:
+        channels = json.load(file)
 
-    this_channel = str(message.channel.id)
+    # this_channel = str(message.channel.id)
     this_guild = message.guild.id
+    this_channel = {
+        "guild_id": message.guild.id,
+        "channel_id": message.channel.id
+    }
     sender_name = message.author.name
     try:
         if message.author.discriminator != '0000':
             sender_name += "#" + message.author.discriminator
     except:
-        print("No author discriminator.")
+        # print("No author discriminator.")
+        print("")
 
     try:
         sender_name = message.author.nick
     except:
-        print("No author nick.")
+        # print("No author nick.")
+        print("")
 
     with open("guild_nicks.json", "r") as file:
         guilds = json.load(file)
@@ -199,12 +198,12 @@ async def on_message(message):
             this_guild = guild["guild_nick"]
             break
 
-    if this_channel in channels:
-        channels.remove(this_channel)
-        for channel in channels:
-            destination_channel = client.get_channel(int(channel))
+    if this_channel in channels["channels"]:
+        channels["channels"].remove(this_channel)
+        for channel in channels["channels"]:
+            destination_channel = client.get_guild(
+                channel['guild_id']).get_channel(channel['channel_id'])
             await destination_channel.send("[" + this_guild + "] " + sender_name + ": " + message.content)
-            # await destination_channel.send("[" + this_guild + "] " + sender_name + ": " + msg)
 
 
 async def main():
